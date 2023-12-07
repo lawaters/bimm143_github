@@ -1,7 +1,7 @@
 ---
 title: "Class 8"
 author: Lauren Waters (A16326738)
-format: pdf
+format: gfm
 ---
 
 ## Outline 
