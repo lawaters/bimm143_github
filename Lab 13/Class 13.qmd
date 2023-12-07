@@ -1,0 +1,214 @@
+---
+title: "Lab 13"
+author: "Lauren"
+format: pdf
+---
+
+The data for this hands-on session comes from a published RNA-seq experiment where airway smooth mucle cells were treated with **dexamthasone** (dex). 
+
+```{r}
+counts <- read.csv("airway_scaledcounts.csv", row.name=1)
+metadata <- read.csv("airway_metadata.csv")
+```
+
+
+>Q1. How many genes are in this dataset? 
+
+
+```{r}
+nrow(counts)
+```
+>Q2. How many ‘control’ cell lines do we have? 
+
+```{r}
+sum(metadata$dex =="control")
+```
+
+##Toy differential gene expression
+
+```{r}
+control <- metadata[metadata[,"dex"]=="control",]
+control.counts <- counts[ ,control$id]
+control.mean <- rowSums( control.counts )/4 
+head(control.mean)
+```
+
+>Q3. How would you make the above code in either approach more robust? Is there a function that could help here? 
+
+Lets calculate the mean counts per gene in the "control" samples. We can then compare this value for each gene to the mean counts in the "treated" samples (columns).
+
+-Step 1. Find which columns in the `counts` correspong to the "control" samples 
+-Step 2. Calculate the mean value per gene in these columns 
+-Step 3. Store my anser for later in `control.mean` 
+
+```{r}
+control.inds <- metadata$dex == "control"
+control.counts <- counts[,control.inds]
+head(control.counts)
+```
+
+```{r}
+#apply(control.counts, 1, mean) OR 
+
+control.mean <- rowMeans(control.counts)
+```
+
+>Q4. Follow the same procedure for the treated samples (i.e. calculate the mean per gene across drug treated samples and assign to a labeled vector called treated.mean)
+
+
+```{r}
+treated.inds <- metadata$dex == "treated"
+treated.counts <- counts[,treated.inds]
+treated.mean <- rowMeans(treated.counts)
+```
+
+To keep us tidy, lets put `control.mean` and `treated.mean` vectors together as 2 columns of new data
+
+```{r}
+meancounts <- data.frame(control.mean, treated.mean)
+```
+
+
+>Q5 (a). Create a scatter plot showing the mean of the treated samples against the mean of the control samples. Your plot should look something like the following.
+
+```{r}
+plot(meancounts)
+```
+
+
+>Q5 (b).You could also use the ggplot2 package to make this figure producing the plot below. What geom_?() function would you use for this plot?
+
+```{r}
+library(ggplot2)
+
+ggplot(meancounts) + 
+  aes(control.mean, treated.mean) +
+  geom_point(alpha=0.2)
+```
+
+>Q6. Try plotting both axes on a log scale. What is the argument to plot() that allows you to do this?
+
+```{r}
+plot(meancounts, log="xy")
+```
+
+Log transformations are super useful when our data is skewed and measured over a wide range like this. We can use different log transformations like base10 or natural logs, but we most often prefer log2 units. 
+
+```{r}
+#treated/control
+log2(10/10)
+```
+
+What if there was a doubling 
+```{r}
+#treated/control
+log2(20/10)
+```
+
+What if there was a half count
+```{r}
+#treated/control
+log2(10/20)
+```
+
+Lets add a log2 fold change column to our little `meancounts` data.frame: 
+
+```{r}
+meancounts$log2fc <- log2(meancounts$treated.mean/meancounts$control.mean)
+
+head(meancounts)
+```
+
+There are a couple weird results, so lets filter them.
+
+```{r}
+to.rm.inds <- rowSums(meancounts[,1:2] == 0) > 0
+mycounts <- meancounts[!to.rm.inds, ]
+```
+
+The `!` flips TRUE value to FALSE and vice-versa
+
+
+```{r}
+dim(mycounts)
+```
+
+```{r}
+head(mycounts)
+```
+
+>Q7. What is the purpose of the arr.ind argument in the which() function call above? Why would we then take the first column of the output and need to call the unique() function?
+
+It gives the rows and columns where the outputs are TRUE (for both). The `unique()`finction makes sure that any rows aren't counted twice.
+
+
+
+A common threshold used for calling something differentially expressed is a log2(FoldChange) of greater than 2 or less than -2. Let’s filter the dataset both ways to see how many genes are up or down-regulated.
+
+
+```{r}
+up.ind <- mycounts$log2fc > 2
+down.ind <- mycounts$log2fc < (-2)
+```
+
+>Q8. Using the up.ind vector above can you determine how many up regulated genes we have at the greater than 2 fc level? 
+
+```{r}
+sum(up.ind)
+```
+
+>Q9. Using the down.ind vector above can you determine how many down regulated genes we have at the greater than 2 fc level? 
+
+```{r}
+sum(down.ind)
+```
+
+>Q10. Do you trust these results? Why or why not?
+
+No, we aren't accounting for statistical significance with these results.
+
+#Using DESeq2
+
+like any package we must load it up using `library()`
+
+```{r}
+library(DESeq2)
+```
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData=counts, 
+                              colData=metadata, 
+                              design=~dex)
+```
+
+Now we can run our DESeq analysis
+
+```{r}
+dds <- DESeq(dds)
+```
+
+
+```{r}
+res <-  results(dds)
+```
+
+
+#Summary Results Plot 
+
+Volcano plot. 
+This is a common type of summary figure that keeps both our inner biologist and inner stats nerd happy because it shows both P-value and Log2(Fold-Changes).
+
+```{r}
+plot(res$log2FoldChange, -log(res$padj))
+abline(v=2, col="red")
+abline(v=-2, col="red")
+abline(h=-log(0.05), col="blue")
+```
+
+
+save our results to date:
+
+```{r}
+write.csv(res, file="deseq_results.cvs")
+```
+
