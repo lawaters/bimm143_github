@@ -8,7 +8,7 @@ My class work for fall '23 in [BIMM143](https://bioboot.github.io/bimm143_F23/) 
 - Class 8: [Unsupervised Learning Mini-Project](https://github.com/lawaters/bimm143_github/blob/main/Class%208/Class-8-lab.pdf)
 - Class 9: [Structural Bioinformatics (Pt. 1)](https://github.com/lawaters/bimm143_github/blob/main/Lab%209/Lab-9.pdf)
 - Class 11: [Structural Bioinformatics (Pt. 2)]
-- Class 12: [Genome informatics]
+- Class 12: [Genome informatics](https://github.com/lawaters/bimm143_github/blob/main/Class%2012/LAB-12-BOXPLOT.pdf)
 - Class 13: [Transcriptomics and the Analysis of RNA-Seq Data](https://github.com/lawaters/bimm143_github/blob/main/Lab%2013/Class-13.pdf)
 - Class 14: [RNA-Seq Analysis]  
 - Class 17: [Essential UNIX for Bioinformatics]
