@@ -13,4 +13,4 @@ My class work for fall '23 in [BIMM143](https://bioboot.github.io/bimm143_F23/) 
 - Class 14: [RNA-Seq Analysis]  
 - Class 17: [Essential UNIX for Bioinformatics]
 - Class 18: 
-- Class 19:
+- Class 19: (https://github.com/lawaters/bimm143_github/blob/main/Lab%2019/lab19.pdf)
